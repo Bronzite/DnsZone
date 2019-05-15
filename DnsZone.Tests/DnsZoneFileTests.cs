@@ -38,6 +38,12 @@ example.com. IN	CAA 0	iodef		""mailto: hostmaster@example.com""
         }
 
         [Test]
+        public async Task ParseCAATest()
+        {
+            var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/caatest.com.zone", "domain.com");
+        }
+
+        [Test]
         public async Task Parse2Test() {
             var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/domain.com.zone", "domain.com");
         }

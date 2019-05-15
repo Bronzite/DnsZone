@@ -11,7 +11,7 @@ $TTL 2h
 		NS	ns.host.net.
 		NS	ns2.host.net.
 		MX	10	mail
-		IN	TXT	"v=spf1 +mx +include:c4.net ?all"
+		IN	TXT	"v=spf1 +mx +include:host.net ?all"
 
 ; CAA RECORDS
 	 	IN	CAA	0	iodef		"mailto:hostmaster@host.net"
