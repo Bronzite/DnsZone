@@ -106,7 +106,10 @@ namespace DnsZone.Parser {
                 if (string.IsNullOrWhiteSpace(Origin)) {
                     throw new ArgumentException("couldn't resolve relative domain name");
                 }
-                val = val + "." + Origin;
+                if (string.IsNullOrEmpty(val))
+                    val = Origin;
+                else
+                    val = val + "." + Origin;
             } else {
                 val = val.TrimEnd('.');
             }

@@ -12,6 +12,28 @@ namespace DnsZone.Tests {
     public class DnsZoneFileTests {
 
         [Test]
+        public void NSLeadingWhitespaceError()
+        {
+            var zone = new DnsZoneFile();
+            zone.Records.Add(new NsResourceRecord
+            {
+                Name = "example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                NameServer = "ns1.host.com"
+            });
+            zone.Records.Add(new NsResourceRecord
+            {
+                Name = "example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                NameServer = "ns2.host.com",
+            });
+            string sOutput = zone.ToString();
+            Assert.AreEqual(";NS records\r\nexample.com.\tIN\t15m\tNS\tns1.host.com.\t\r\nexample.com.\tIN\t15m\tNS\tns2.host.com.\t\r\n\r\n", sOutput);
+        }
+
+        [Test]
         public async Task ParseWhitespace()
         {
             var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/whitespace.com.zone", "whitespace.com");
@@ -81,10 +103,43 @@ mail3         IN  A     192.0.2.5             ; IPv4 address for mail3.example.c
                 Assert.AreEqual(3, zone.Records.OfType<MxResourceRecord>().Count());
                 Assert.AreEqual(5, zone.Records.OfType<AResourceRecord>().Count());
                 Assert.AreEqual(2, zone.Records.OfType<CNameResourceRecord>().Count());
+
             } catch (TokenException exc) {
                 Console.WriteLine(exc.Token.Position.GetLine());
                 throw;
             }
+            
+        }
+
+
+        [Test]
+        public void EmptyLabelParseTest()
+        {
+            const string str = @"
+$TTL 2h
+@	IN	SOA	ns.host.com.	ns2.host.com.	(
+			2018042701	; serial
+			2h		; refresh
+			15m		; update retry
+			2w		; expiry
+			2h		; minimum
+		)
+		NS	ns.host.com.
+		NS	ns2.host.com.
+		MX	20	mail.host.com.
+;		IN	TXT	""v = spf1 + mx + include:host.com? all""
+
+        A   10.0.0.1";
+                var zone = DnsZoneFile.Parse(str,"example.com");
+                foreach (ResourceRecord rr in zone.Records)
+                {
+                    if (rr.Name.Substring(0, 1) == ".")
+                    {
+                        throw new Exception("Empty label");
+                    }
+                }
+
+
         }
 
         [Test]
